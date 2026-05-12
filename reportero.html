@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="description" content="Interfaz Reportero Móvil - Radio Oasis FM 103.1 MZ">
+    <title>Radio Oasis FM | Reportero - Móvil</title>
+    <style>
+        :root {
+            --bg: #0a0f1a;
+            --card: #11161f;
+            --border: #2a3342;
+            --green: #2ecc71;
+            --red: #e74c3c;
+            --yellow: #f39c12;
+            --blue: #3498db;
+            --text: #ecf0f1;
+            --oasis-gold: #f1c40f;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: #000000;
+            color: var(--text);
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .phone-mockup {
+            width: 360px;
+            background: #0a0e17;
+            border-radius: 48px;
+            padding: 16px;
+            box-shadow: 0 25px 40px rgba(0,0,0,0.6);
+            border: 1px solid var(--oasis-gold);
+        }
+        .phone-screen {
+            background: #0f1420;
+            border-radius: 36px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 620px;
+            position: relative;
+        }
+        .screen-content {
+            flex: 1;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .oasis-brand {
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: var(--oasis-gold);
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .connection-badge {
+            font-size: 10px;
+            text-align: center;
+            background: #141c2c;
+            padding: 6px;
+            border-radius: 30px;
+            margin: 8px 0;
+        }
+        .vumetro-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .vumetro {
+            width: 60px;
+            height: 160px;
+            background: #10141e;
+            border-radius: 40px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px black;
+        }
+        .vumetro-bar {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(0deg, #2ecc71, #f1c40f);
+            height: 0%;
+            transition: height 0.07s linear;
+            border-radius: 40px;
+        }
+        .reporter-message-area {
+            background: #0a0e18;
+            padding: 14px;
+            border-radius: 28px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            margin: 12px 0;
+            border-left: 3px solid var(--oasis-gold);
+        }
+        .reporter-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: 60px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            font-size: 0.8rem;
+            transition: transform 0.05s;
+        }
+        .btn:active { transform: scale(0.96); }
+        .btn-blue { background: #3498db; }
+        .btn-red { background: #e74c3c; }
+        .btn-yellow { background: #f39c12; color: #1e1e1e; }
+        .btn-oasis { background: #f1c40f; color: #1e1e1e; grid-column: span 2; }
+        .estado-texto {
+            font-size: 0.6rem;
+            text-align: center;
+            margin-top: 15px;
+            color: #8e9eaf;
+        }
+        .comando-recibido {
+            background: #1a2a3a;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            text-align: center;
+            border: 1px dashed var(--oasis-gold);
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+        .footer-note {
+            text-align: center;
+            font-size: 0.6rem;
+            color: #5a6e85;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+<div class="phone-mockup">
+    <div class="phone-screen">
+        <div class="screen-content">
+            <div>
+                <div class="oasis-brand">🏜️ RADIO OASIS FM 103.1 MZ</div>
+                <div class="connection-badge" id="reporterConnBadge">🔴 CONECTANDO...</div>
+                
+                <div class="vumetro-container">
+                    <div class="vumetro">
+                        <div id="vumeterFill" class="vumetro-bar"></div>
+                    </div>
+                </div>
+
+                <div class="reporter-message-area" id="reporterDisplayMsg">
+                    📡 Esperando instrucciones del estudio
+                </div>
+
+                <div class="reporter-buttons">
+                    <button id="reporterListoBtn" class="btn btn-blue">✅ LISTO</button>
+                    <button id="reporterProblemaBtn" class="btn btn-red">⚠️ PROBLEMA</button>
+                    <button id="reporterVisualBtn" class="btn btn-yellow">📸 VISUAL</button>
+                    <button id="reporterTransmitirBtn" class="btn btn-oasis">🎙️ SOLICITAR TRANSMISIÓN</button>
+                </div>
+                
+                <div class="comando-recibido" id="lastCommandDisplay">
+                    📻 Esperando comandos...
+                </div>
+            </div>
+            
+            <div>
+                <div class="estado-texto" id="reporterStatusText">📱 Estado: Inicializando</div>
+                <div class="footer-note">
+                    Conectado al estudio | Radio Oasis FM
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==================== REPORTERO - RADIO OASIS FM ====================
+    let estudioConnected = false;
+    let estudioId = null;
+    let currentState = 'standby';
+    let transmittingAudio = false;
+    let vumeterInterval = null;
+    let lastCommandProcessed = 0;
+    
+    // Obtener ID del estudio desde URL
+    const urlParams = new URLSearchParams(window.location.search);
+    estudioId = urlParams.get('estudio');
+    
+    // Generar ID único para este reportero
+    const reporterId = 'reportero_' + Math.random().toString(36).substring(2, 10);
+    
+    // Elementos DOM
+    const reporterConnBadge = document.getElementById('reporterConnBadge');
+    const reporterDisplayMsg = document.getElementById('reporterDisplayMsg');
+    const reporterStatusText = document.getElementById('reporterStatusText');
+    const vumeterFill = document.getElementById('vumeterFill');
+    const lastCommandDisplay = document.getElementById('lastCommandDisplay');
+    
+    function addReporterLog(message, type = 'info') {
+        // Solo interno, no se muestra en UI principal
+        console.log(`[Reportero] ${message}`);
+    }
+    
+    function updateUI() {
+        if(!estudioConnected || !estudioId) {
+            reporterConnBadge.innerText = '🔴 SIN CONEXIÓN';
+            reporterConnBadge.style.color = '#e74c3c';
+            reporterStatusText.innerText = 'Estado: Desconectado. Verifica el enlace.';
+            reporterDisplayMsg.innerText = '🔌 Desconectado del estudio.';
+            if(vumeterInterval) clearInterval(vumeterInterval);
+            vumeterFill.style.height = '0%';
+            transmittingAudio = false;
+            return;
+        }
+        
+        reporterConnBadge.innerText = '🟢 CONECTADO A OASIS FM';
+        reporterConnBadge.style.color = '#2ecc71';
+        
+        if(currentState === 'onair') {
+            reporterStatusText.innerText = '🔴 EN EL AIRE - Transmitiendo';
+            reporterDisplayMsg.innerHTML = '🎙️ ¡ESTÁS AL AIRE! Micrófono abierto';
+            if(!transmittingAudio) startVumeter();
+        } else if(currentState === 'cortado') {
+            reporterStatusText.innerText = '✂️ SEÑAL CORTADA';
+            reporterDisplayMsg.innerHTML = '⛔ Señal cortada por el estudio';
+            if(transmittingAudio) stopVumeter();
+        } else if(currentState === 'ready') {
+            reporterStatusText.innerText = '✅ LISTO - En posición';
+            reporterDisplayMsg.innerHTML = '✅ Listo confirmado. Esperando instrucciones.';
+            if(transmittingAudio) stopVumeter();
+        } else if(currentState === 'atento') {
+            reporterStatusText.innerText = '⚠️ ATENTO - Alerta';
+            reporterDisplayMsg.innerHTML = '⚠️ El estudio te ha enviado una alerta. Revisa tu equipo.';
+            if(transmittingAudio) stopVumeter();
+        } else {
+            reporterStatusText.innerText = '📡 En espera';
+            reporterDisplayMsg.innerHTML = '📻 Conectado a Radio Oasis FM. Esperando comandos.';
+            if(transmittingAudio) stopVumeter();
+        }
+    }
+    
+    function startVumeter() {
+        if(vumeterInterval) clearInterval(vumeterInterval);
+        transmittingAudio = true;
+        vumeterInterval = setInterval(() => {
+            if(currentState === 'onair' && estudioConnected) {
+                const level = Math.random() * 70 + 20;
+                vumeterFill.style.height = level + '%';
+            } else {
+                vumeterFill.style.height = '0%';
+            }
+        }, 100);
+    }
+    
+    function stopVumeter() {
+        if(vumeterInterval) {
+            clearInterval(vumeterInterval);
+            vumeterInterval = null;
+        }
+        transmittingAudio = false;
+        vumeterFill.style.height = '0%';
+    }
+    
+    function sendAlertToEstudio(message, type = 'info') {
+        if(!estudioConnected || !estudioId) return;
+        const alertData = {
+            text: message,
+            type: type,
+            timestamp: Date.now()
+        };
+        // Guardar alerta para que el estudio la lea
+        let reporterData = localStorage.getItem(`oasis_${estudioId}_reportero`);
+        let data = reporterData ? JSON.parse(reporterData) : { connected: true, alerts: [] };
+        data.connected = true;
+        data.lastAlert = alertData;
+        data.timestamp = Date.now();
+        localStorage.setItem(`oasis_${estudioId}_reportero`, JSON.stringify(data));
+    }
+    
+    function sendReporterState() {
+        if(!estudioConnected || !estudioId) return;
+        const reporterData = {
+            connected: true,
+            state: currentState,
+            timestamp: Date.now()
+        };
+        localStorage.setItem(`oasis_${estudioId}_reportero`, JSON.stringify(reporterData));
+    }
+    
+    function readCommandsFromEstudio() {
+        if(!estudioId) return;
+        const commandKey = `oasis_${estudioId}_command`;
+        const commandData = localStorage.getItem(commandKey);
+        if(commandData) {
+            try {
+                const cmd = JSON.parse(commandData);
+                if(cmd.timestamp > lastCommandProcessed) {
+                    lastCommandProcessed = cmd.timestamp;
+                    processCommand(cmd.command, cmd.message);
+                    localStorage.removeItem(commandKey);
+                }
+            } catch(e) {}
+        }
+    }
+    
+    function processCommand(command, message) {
+        if(command === 'LISTO') {
+            currentState = 'ready';
+            lastCommandDisplay.innerHTML = `📨 Último comando: ✅ LISTO - ${message || 'Confirma preparación'}`;
+            addReporterLog('Comando LISTO recibido');
+        } else if(command === 'ATENCIÓN') {
+            currentState = 'atento';
+            lastCommandDisplay.innerHTML = `📨 Último comando: ⚠️ ATENCIÓN - ${message || 'Revisar incidencias'}`;
+            addReporterLog('Comando ATENCIÓN recibido');
+        } else if(command === 'AL_AIRE') {
+            currentState = 'onair';
+            lastCommandDisplay.innerHTML = `📨 Último comando: 🔴 AL AIRE - ${message || 'Inicia transmisión'}`;
+            addReporterLog('Comando AL AIRE recibido');
+        } else if(command === 'CORTAR') {
+            currentState = 'cortado';
+            lastCommandDisplay.innerHTML = `📨 Último comando: ✂️ CORTAR - ${message || 'Señal interrumpida'}`;
+            addReporterLog('Comando CORTAR recibido');
+        }
+        
+        // Leer estado del estudio para sincronizar
+        const estudioStateKey = `oasis_${estudioId}_estudio`;
+        const estudioState = localStorage.getItem(estudioStateKey);
+        if(estudioState) {
+            try {
+                const state = JSON.parse(estudioState);
+                if(state.gusState !== currentState && command !== '') {
+                    // Sincronizar
+                }
+            } catch(e) {}
+        }
+        
+        sendReporterState();
+        updateUI();
+        
+        // Limpiar comando después de 2 segundos visualmente
+        setTimeout(() => {
+            if(lastCommandDisplay.innerHTML.includes('Último comando')) {
+                lastCommandDisplay.innerHTML = '📻 Esperando nuevos comandos...';
+            }
+        }, 4000);
+    }
+    
+    function connectToEstudio() {
+        if(!estudioId) {
+            reporterConnBadge.innerText = '⚠️ ERROR: Enlace inválido';
+            reporterDisplayMsg.innerHTML = '❌ Enlace de conexión inválido. Usa el enlace proporcionado por el estudio.';
+            return;
+        }
+        
+        // Registrar este reportero
+        localStorage.setItem('oasis_current_reporter_id', reporterId);
+        
+        // Crear estructura de datos
+        const reporterData = {
+            connected: true,
+            state: currentState,
+            timestamp: Date.now()
+        };
+        localStorage.setItem(`oasis_${estudioId}_reportero`, JSON.stringify(reporterData));
+        
+        estudioConnected = true;
+        addReporterLog(`Conectado al estudio: ${estudioId}`);
+        updateUI();
+    }
+    
+    function disconnectFromEstudio() {
+        if(estudioId) {
+            const reporterData = {
+                connected: false,
+                timestamp: Date.now()
+            };
+            localStorage.setItem(`oasis_${estudioId}_reportero`, JSON.stringify(reporterData));
+        }
+        localStorage.removeItem('oasis_current_reporter_id');
+        estudioConnected = false;
+        currentState = 'standby';
+        updateUI();
+        stopVumeter();
+    }
+    
+    // Acciones del reportero
+    document.getElementById('reporterListoBtn').onclick = () => {
+        if(!estudioConnected) return;
+        currentState = 'ready';
+        sendAlertToEstudio('Reportero: LISTO - En posición y audio OK', 'success');
+        sendReporterState();
+        updateUI();
+        lastCommandDisplay.innerHTML = '✅ Has confirmado LISTO. Estudio informado.';
+        setTimeout(() => {
+            if(lastCommandDisplay.innerHTML.includes('Has confirmado')) {
+                lastCommandDisplay.innerHTML = '📻 Esperando nuevos comandos...';
+            }
+        }, 3000);
+    };
+    
+    document.getElementById('reporterProblemaBtn').onclick = () => {
+        if(!estudioConnected) return;
+        currentState = 'atento';
+        sendAlertToEstudio('⚠️ Reportero: PROBLEMA TÉCNICO - Señal débil', 'problem');
+        sendReporterState();
+        updateUI();
+        lastCommandDisplay.innerHTML = '⚠️ Has reportado un problema. Estudio notificado.';
+        setTimeout(() => {
+            if(lastCommandDisplay.innerHTML.includes('Has reportado')) {
+                lastCommandDisplay.innerHTML = '📻 Esperando nuevos comandos...';
+            }
+        }, 3000);
+    };
+    
+    document.getElementById('reporterVisualBtn').onclick = () => {
+        if(!estudioConnected) return;
+        sendAlertToEstudio('📸 Reportero: Material VISUAL destacado enviado', 'info');
+        lastCommandDisplay.innerHTML = '📸 Visual enviado al estudio.';
+        setTimeout(() => {
+            if(lastCommandDisplay.innerHTML.includes('Visual enviado')) {
+                lastCommandDisplay.innerHTML = '📻 Esperando nuevos comandos...';
+            }
+        }, 2000);
+    };
+    
+    document.getElementById('reporterTransmitirBtn').onclick = () => {
+        if(!estudioConnected) return;
+        if(currentState === 'onair') {
+            lastCommandDisplay.innerHTML = '🔴 Ya estás al aire. Espera instrucciones del estudio.';
+        } else if(currentState === 'cortado') {
+            lastCommandDisplay.innerHTML = '⛔ Señal cortada. No puedes transmitir.';
+        } else {
+            sendAlertToEstudio('Reportero solicita autorización para transmitir', 'info');
+            lastCommandDisplay.innerHTML = '📨 Solicitud de transmisión enviada al estudio.';
+        }
+        setTimeout(() => {
+            if(lastCommandDisplay.innerHTML.includes('Solicitud') || lastCommandDisplay.innerHTML.includes('Ya estás')) {
+                lastCommandDisplay.innerHTML = '📻 Esperando nuevos comandos...';
+            }
+        }, 3000);
+    };
+    
+    // Sincronización periódica
+    setInterval(() => {
+        if(estudioId && estudioConnected) {
+            readCommandsFromEstudio();
+            // Verificar si el estudio sigue activo
+            const estudioState = localStorage.getItem(`oasis_${estudioId}_estudio`);
+            if(!estudioState) {
+                disconnectFromEstudio();
+                location.reload();
+            }
+        }
+    }, 800);
+    
+    // Inicializar conexión
+    if(estudioId) {
+        connectToEstudio();
+    } else {
+        reporterConnBadge.innerText = '⚠️ ENLACE INVÁLIDO';
+        reporterDisplayMsg.innerHTML = '❌ Error: No se especificó ID del estudio.<br>Usa el enlace proporcionado por Radio Oasis FM.';
+    }
+    
+    // Limpiar al cerrar
+    window.addEventListener('beforeunload', () => {
+        if(estudioId) {
+            const reporterData = {
+                connected: false,
+                timestamp: Date.now()
+            };
+            localStorage.setItem(`oasis_${estudioId}_reportero`, JSON.stringify(reporterData));
+        }
+        localStorage.removeItem('oasis_current_reporter_id');
+        if(vumeterInterval) clearInterval(vumeterInterval);
+    });
+</script>
+</body>
+</html>
