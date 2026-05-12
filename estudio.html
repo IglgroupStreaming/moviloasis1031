@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <meta name="description" content="Panel de Control Estudio - Radio Oasis FM 103.1 MZ">
     <title>Radio Oasis FM | Estudio - Control Central</title>
     <style>
         :root {
@@ -26,7 +25,7 @@
         body {
             background: linear-gradient(135deg, #0a0f1a 0%, #0c1220 100%);
             color: var(--text);
-            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -55,11 +54,6 @@
             background-clip: text;
             color: transparent;
         }
-        .header p {
-            font-size: 0.8rem;
-            color: #8e9eaf;
-            margin-top: 5px;
-        }
         .onair-light {
             width: 14px;
             height: 14px;
@@ -67,13 +61,8 @@
             border-radius: 50%;
             display: inline-block;
             margin-left: 10px;
-            vertical-align: middle;
         }
-        .onair-light.active {
-            background: var(--red);
-            box-shadow: 0 0 8px red;
-            animation: pulse 1s infinite;
-        }
+        .onair-light.active { background: var(--red); box-shadow: 0 0 8px red; animation: pulse 1s infinite; }
         .mobile-card {
             border: 2px solid var(--green);
             border-radius: 24px;
@@ -82,14 +71,8 @@
             margin: 20px 0;
             transition: 0.1s;
         }
-        .mobile-card.onair-active { 
-            border-color: var(--red); 
-            box-shadow: 0 0 15px rgba(231,76,60,0.4); 
-        }
-        .mobile-card.cortado { 
-            border-color: #7f8c8d; 
-            background: #1a1e2a; 
-        }
+        .mobile-card.onair-active { border-color: var(--red); box-shadow: 0 0 15px rgba(231,76,60,0.4); }
+        .mobile-card.cortado { border-color: #7f8c8d; background: #1a1e2a; }
         .mobile-header {
             display: flex;
             justify-content: space-between;
@@ -161,10 +144,7 @@
             background: #2c1a1f;
             color: #e67e22;
         }
-        .reporter-status.connected {
-            background: #0e2a1f;
-            color: #2ecc71;
-        }
+        .reporter-status.connected { background: #0e2a1f; color: #2ecc71; }
         .alerts-log {
             background: #050a12;
             border-radius: 20px;
@@ -193,28 +173,8 @@
             0% { opacity: 0.7; }
             100% { opacity: 1; }
         }
-        .footer { 
-            text-align: center; 
-            font-size: 0.7rem; 
-            color: #5a6e85; 
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid var(--border);
-        }
-        .status-text {
-            font-size: 0.7rem;
-            text-align: center;
-            margin-top: 12px;
-        }
-        .refresh-tip {
-            background: #1a2a3a;
-            border-radius: 12px;
-            padding: 8px;
-            margin-top: 10px;
-            font-size: 0.65rem;
-            text-align: center;
-            color: #f1c40f;
-        }
+        .footer { text-align: center; font-size: 0.7rem; color: #5a6e85; margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border); }
+        .status-text { font-size: 0.7rem; text-align: center; margin-top: 12px; }
     </style>
 </head>
 <body>
@@ -243,42 +203,32 @@
         <div class="link-box" id="connectionLink">Cargando...</div>
         <button id="copyLinkBtn" class="btn-copy">📋 Copiar enlace</button>
         <div id="reporterStatus" class="reporter-status">⚫ Reportero: Desconectado</div>
-        <div class="refresh-tip" id="refreshTip" style="display:none;">
-            🔄 Si el reportero no se conecta, ambos deben refrescar la página (F5)
-        </div>
     </div>
 
     <div class="alerts-log" id="studioLog">
         <div class="alert-item">🏜️ Radio Oasis FM - Sistema iniciado</div>
         <div class="alert-item">🎧 Esperando conexión del reportero...</div>
     </div>
-    <div class="footer">
-        💡 Abre el enlace de arriba en otra pestaña o dispositivo<br>
-        📡 Comunicación P2P simulada vía localStorage
-    </div>
+    <div class="footer">💡 Abre el enlace de arriba en otra pestaña o dispositivo</div>
 </div>
 
 <script>
-    // ==================== ESTUDIO - RADIO OASIS FM 103.1 MZ (CORREGIDO) ====================
+    // ==================== ESTUDIO - VERSIÓN CORREGIDA ====================
     let reporterConnected = false;
     let gusState = 'standby';
     let currentReporterId = null;
-    let lastAlertRead = 0;
-    let connectionAttempts = 0;
-
+    
     // Generar ID único para este estudio
     const estudioId = 'estudio_' + Math.random().toString(36).substring(2, 10);
     const fullLink = `${window.location.origin}${window.location.pathname.replace('estudio.html', 'reportero.html')}?estudio=${estudioId}`;
     document.getElementById('connectionLink').innerText = fullLink;
 
-    // Elementos DOM
     const studioBadge = document.getElementById('studioBadge');
     const studioStateText = document.getElementById('studioStateText');
     const studioMobileCard = document.getElementById('studioMobileCard');
     const studioOnAirLight = document.getElementById('studioOnAirLight');
     const reporterStatusDiv = document.getElementById('reporterStatus');
     const studioLog = document.getElementById('studioLog');
-    const refreshTip = document.getElementById('refreshTip');
 
     function addAlert(message, type = 'info') {
         const alertDiv = document.createElement('div');
@@ -355,22 +305,12 @@
         }
     }
 
-    function syncWithReporter() {
-        if(!reporterConnected || !currentReporterId) return;
-        const estudioState = {
-            gusState: gusState,
-            timestamp: Date.now(),
-            estudioId: estudioId
-        };
-        localStorage.setItem(`oasis_${currentReporterId}_estudio`, JSON.stringify(estudioState));
-    }
-
     function sendCommandToReporter(command, message) {
         if(!reporterConnected || !currentReporterId) {
             addAlert('Reportero no conectado', 'problem');
             return false;
         }
-        const commandKey = `oasis_${currentReporterId}_command`;
+        const commandKey = `oasis_cmd_${currentReporterId}`;
         localStorage.setItem(commandKey, JSON.stringify({
             command: command,
             message: message,
@@ -394,81 +334,37 @@
         else if(newState === 'cortado') { commandName = 'CORTAR'; addAlert('✂️ SEÑAL CORTADA', 'problem'); }
         
         sendCommandToReporter(commandName, commandMsg);
-        syncWithReporter();
         updateUI();
     }
 
-    // Limpiar datos antiguos de localStorage (corregido)
-    function cleanOldData() {
-        const keysToKeep = [`oasis_${estudioId}_`];
-        for(let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if(key && key.startsWith('oasis_') && !key.includes(estudioId)) {
-                localStorage.removeItem(key);
-            }
-        }
-    }
-
-    function readReporterState() {
-        if(!currentReporterId) return;
+    // ESCUCHAR CONEXIONES DEL REPORTERO
+    function listenForReporter() {
+        // Buscar datos guardados por el reportero
+        const reporterDataKey = `oasis_reporter_${estudioId}`;
+        const reporterData = localStorage.getItem(reporterDataKey);
         
-        const reporterData = localStorage.getItem(`oasis_${currentReporterId}_reportero`);
         if(reporterData) {
             try {
                 const data = JSON.parse(reporterData);
                 if(data.connected === true && !reporterConnected) {
                     reporterConnected = true;
+                    currentReporterId = data.reporterId;
                     addAlert('🔗 Reportero conectado al sistema', 'success');
-                    syncWithReporter();
                     updateUI();
-                    refreshTip.style.display = 'none';
-                } else if((data.connected === false || data.connected === undefined) && reporterConnected) {
+                } else if(data.connected === false && reporterConnected) {
                     reporterConnected = false;
+                    currentReporterId = null;
                     addAlert('🔌 Reportero desconectado', 'problem');
                     gusState = 'standby';
                     updateUI();
                 }
                 
-                if(data.lastAlert && data.lastAlert.timestamp > lastAlertRead) {
+                // Leer alertas del reportero
+                if(data.lastAlert && data.lastAlert.timestamp > (parseInt(localStorage.getItem('lastAlertRead_' + estudioId)) || 0)) {
                     addAlert(data.lastAlert.text, data.lastAlert.type === 'problem' ? 'problem' : 'reporter-msg');
-                    lastAlertRead = data.lastAlert.timestamp;
+                    localStorage.setItem('lastAlertRead_' + estudioId, data.lastAlert.timestamp);
                 }
             } catch(e) {}
-        } else if(reporterConnected) {
-            // El reportero ya no existe, desconectar
-            reporterConnected = false;
-            currentReporterId = null;
-            addAlert('🔌 Sesión del reportero finalizada', 'problem');
-            gusState = 'standby';
-            updateUI();
-        }
-    }
-
-    function checkForReporter() {
-        // Buscar cualquier reportero que quiera conectarse a este estudio
-        for(let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if(key && key.startsWith(`oasis_`) && key.endsWith(`_reportero`)) {
-                const reporterKeyMatch = key.match(/oasis_(.+)_reportero/);
-                if(reporterKeyMatch && reporterKeyMatch[1]) {
-                    const potentialReporterId = reporterKeyMatch[1];
-                    const data = localStorage.getItem(key);
-                    if(data) {
-                        try {
-                            const parsed = JSON.parse(data);
-                            if(parsed.estudioId === estudioId && !reporterConnected) {
-                                currentReporterId = potentialReporterId;
-                                reporterConnected = true;
-                                addAlert(`📱 Reportero conectado correctamente`, 'success');
-                                syncWithReporter();
-                                updateUI();
-                                refreshTip.style.display = 'none';
-                                break;
-                            }
-                        } catch(e) {}
-                    }
-                }
-            }
         }
     }
 
@@ -491,29 +387,14 @@
 
     // Sincronización periódica
     setInterval(() => {
-        checkForReporter();
-        if(reporterConnected) {
-            readReporterState();
-        }
-        connectionAttempts++;
-        if(connectionAttempts > 15 && !reporterConnected) {
-            refreshTip.style.display = 'block';
-        }
+        listenForReporter();
     }, 800);
 
     // Inicialización
-    cleanOldData();
     addAlert('🏜️ RADIO OASIS FM 103.1 MZ - Panel de Estudio listo', 'success');
     addAlert(`🔗 ID del estudio: ${estudioId}`, 'info');
     addAlert('🔗 Comparte el enlace con el reportero', 'info');
     updateUI();
-    
-    // Limpiar al cerrar
-    window.addEventListener('beforeunload', () => {
-        if(currentReporterId) {
-            localStorage.removeItem(`oasis_${currentReporterId}_estudio`);
-        }
-    });
 </script>
 </body>
 </html>
