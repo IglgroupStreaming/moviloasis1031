@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <meta name="description" content="Interfaz Reportero Móvil - Radio Oasis FM 103.1 MZ">
     <title>Radio Oasis FM | Reportero - Móvil</title>
     <style>
         :root {
@@ -25,7 +24,7 @@
         body {
             background: #000000;
             color: var(--text);
-            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -47,7 +46,6 @@
             display: flex;
             flex-direction: column;
             min-height: 620px;
-            position: relative;
         }
         .screen-content {
             flex: 1;
@@ -141,10 +139,6 @@
             text-align: center;
             border: 1px dashed var(--oasis-gold);
         }
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            100% { opacity: 1; }
-        }
         .footer-note {
             text-align: center;
             font-size: 0.6rem;
@@ -152,15 +146,6 @@
             margin-top: 15px;
             padding-top: 10px;
             border-top: 1px solid var(--border);
-        }
-        .error-message {
-            background: #3a1a1a;
-            color: #ff8888;
-            padding: 10px;
-            border-radius: 16px;
-            text-align: center;
-            margin: 10px 0;
-            font-size: 0.7rem;
         }
     </style>
 </head>
@@ -196,16 +181,14 @@
             
             <div>
                 <div class="estado-texto" id="reporterStatusText">📱 Estado: Inicializando</div>
-                <div class="footer-note">
-                    Conectado al estudio | Radio Oasis FM
-                </div>
+                <div class="footer-note">Conectado al estudio | Radio Oasis FM</div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // ==================== REPORTERO - RADIO OASIS FM (CORREGIDO) ====================
+    // ==================== REPORTERO - VERSIÓN CORREGIDA ====================
     let estudioConnected = false;
     let estudioId = null;
     let currentState = 'standby';
@@ -220,7 +203,6 @@
     // Generar ID único para este reportero
     const reporterId = 'reportero_' + Math.random().toString(36).substring(2, 10);
     
-    // Elementos DOM
     const reporterConnBadge = document.getElementById('reporterConnBadge');
     const reporterDisplayMsg = document.getElementById('reporterDisplayMsg');
     const reporterStatusText = document.getElementById('reporterStatusText');
@@ -287,36 +269,50 @@
         vumeterFill.style.height = '0%';
     }
     
-    function sendAlertToEstudio(message, type = 'info') {
+    function sendToEstudio(type, message) {
         if(!estudioConnected || !estudioId) return;
-        const alertData = {
-            text: message,
-            type: type,
-            timestamp: Date.now()
-        };
-        let reporterData = localStorage.getItem(`oasis_${estudioId}_reportero`);
-        let data = reporterData ? JSON.parse(reporterData) : { connected: true, estudioId: estudioId };
-        data.connected = true;
-        data.estudioId = estudioId;
-        data.lastAlert = alertData;
+        const reporterDataKey = `oasis_reporter_${estudioId}`;
+        let data = { connected: true, reporterId: reporterId, estudioId: estudioId };
+        
+        if(type === 'alert') {
+            data.lastAlert = {
+                text: message,
+                type: 'info',
+                timestamp: Date.now()
+            };
+        } else if(type === 'problem') {
+            data.lastAlert = {
+                text: message,
+                type: 'problem',
+                timestamp: Date.now()
+            };
+        } else if(type === 'success') {
+            data.lastAlert = {
+                text: message,
+                type: 'success',
+                timestamp: Date.now()
+            };
+        }
         data.timestamp = Date.now();
-        localStorage.setItem(`oasis_${estudioId}_reportero`, JSON.stringify(data));
+        localStorage.setItem(reporterDataKey, JSON.stringify(data));
     }
     
     function sendReporterState() {
         if(!estudioConnected || !estudioId) return;
-        const reporterData = {
+        const reporterDataKey = `oasis_reporter_${estudioId}`;
+        const data = {
             connected: true,
+            reporterId: reporterId,
             estudioId: estudioId,
             state: currentState,
             timestamp: Date.now()
         };
-        localStorage.setItem(`oasis_${estudioId}_reportero`, JSON.stringify(reporterData));
+        localStorage.setItem(reporterDataKey, JSON.stringify(data));
     }
     
-    function readCommandsFromEstudio() {
+    function readCommands() {
         if(!estudioId) return;
-        const commandKey = `oasis_${estudioId}_command`;
+        const commandKey = `oasis_cmd_${reporterId}`;
         const commandData = localStorage.getItem(commandKey);
         if(commandData) {
             try {
@@ -330,41 +326,26 @@
         }
     }
     
-    function readEstudioState() {
-        if(!estudioId) return;
-        const estudioStateKey = `oasis_${reporterId}_estudio`;
-        const estudioData = localStorage.getItem(estudioStateKey);
-        if(estudioData) {
-            try {
-                const state = JSON.parse(estudioData);
-                if(state.gusState && state.gusState !== currentState) {
-                    // Sincronizar si es necesario
-                    console.log('Estado del estudio:', state.gusState);
-                }
-            } catch(e) {}
-        }
-    }
-    
     function processCommand(command, message) {
         if(command === 'LISTO') {
             currentState = 'ready';
-            lastCommandDisplay.innerHTML = `📨 Último comando: ✅ LISTO - ${message || 'Confirma preparación'}`;
+            lastCommandDisplay.innerHTML = `📨 Comando: ✅ LISTO - ${message || 'Confirma preparación'}`;
         } else if(command === 'ATENCIÓN') {
             currentState = 'atento';
-            lastCommandDisplay.innerHTML = `📨 Último comando: ⚠️ ATENCIÓN - ${message || 'Revisar incidencias'}`;
+            lastCommandDisplay.innerHTML = `📨 Comando: ⚠️ ATENCIÓN - ${message || 'Revisar incidencias'}`;
         } else if(command === 'AL_AIRE') {
             currentState = 'onair';
-            lastCommandDisplay.innerHTML = `📨 Último comando: 🔴 AL AIRE - ${message || 'Inicia transmisión'}`;
+            lastCommandDisplay.innerHTML = `📨 Comando: 🔴 AL AIRE - ${message || 'Inicia transmisión'}`;
         } else if(command === 'CORTAR') {
             currentState = 'cortado';
-            lastCommandDisplay.innerHTML = `📨 Último comando: ✂️ CORTAR - ${message || 'Señal interrumpida'}`;
+            lastCommandDisplay.innerHTML = `📨 Comando: ✂️ CORTAR - ${message || 'Señal interrumpida'}`;
         }
         
         sendReporterState();
         updateUI();
         
         setTimeout(() => {
-            if(lastCommandDisplay.innerHTML.includes('Último comando')) {
+            if(lastCommandDisplay.innerHTML.includes('Comando:')) {
                 lastCommandDisplay.innerHTML = '📻 Esperando nuevos comandos...';
             }
         }, 5000);
@@ -372,49 +353,31 @@
     
     function connectToEstudio() {
         if(!estudioId) {
-            reporterConnBadge.innerText = '⚠️ ERROR: Enlace inválido';
-            reporterDisplayMsg.innerHTML = '❌ Enlace de conexión inválido. Usa el enlace proporcionado por el estudio.';
+            reporterConnBadge.innerText = '⚠️ ENLACE INVÁLIDO';
+            reporterDisplayMsg.innerHTML = '❌ Error: No se especificó ID del estudio.';
             return;
         }
         
         // Registrar este reportero para el estudio específico
-        const reporterData = {
+        const reporterDataKey = `oasis_reporter_${estudioId}`;
+        const data = {
             connected: true,
+            reporterId: reporterId,
             estudioId: estudioId,
             state: currentState,
-            timestamp: Date.now(),
-            reporterId: reporterId
+            timestamp: Date.now()
         };
-        localStorage.setItem(`oasis_${estudioId}_reportero`, JSON.stringify(reporterData));
-        
-        // También guardar la sesión activa
-        localStorage.setItem('oasis_current_reporter_session', reporterId);
+        localStorage.setItem(reporterDataKey, JSON.stringify(data));
         
         estudioConnected = true;
         updateUI();
-    }
-    
-    function disconnectFromEstudio() {
-        if(estudioId) {
-            const reporterData = {
-                connected: false,
-                estudioId: estudioId,
-                timestamp: Date.now()
-            };
-            localStorage.setItem(`oasis_${estudioId}_reportero`, JSON.stringify(reporterData));
-        }
-        localStorage.removeItem('oasis_current_reporter_session');
-        estudioConnected = false;
-        currentState = 'standby';
-        updateUI();
-        stopVumeter();
     }
     
     // Acciones del reportero
     document.getElementById('reporterListoBtn').onclick = () => {
         if(!estudioConnected) return;
         currentState = 'ready';
-        sendAlertToEstudio('✅ Reportero: LISTO - En posición y audio OK', 'success');
+        sendToEstudio('success', '✅ Reportero: LISTO - En posición y audio OK');
         sendReporterState();
         updateUI();
         lastCommandDisplay.innerHTML = '✅ Has confirmado LISTO. Estudio informado.';
@@ -428,7 +391,7 @@
     document.getElementById('reporterProblemaBtn').onclick = () => {
         if(!estudioConnected) return;
         currentState = 'atento';
-        sendAlertToEstudio('⚠️ Reportero: PROBLEMA TÉCNICO - Señal débil', 'problem');
+        sendToEstudio('problem', '⚠️ Reportero: PROBLEMA TÉCNICO - Señal débil');
         sendReporterState();
         updateUI();
         lastCommandDisplay.innerHTML = '⚠️ Has reportado un problema. Estudio notificado.';
@@ -441,7 +404,7 @@
     
     document.getElementById('reporterVisualBtn').onclick = () => {
         if(!estudioConnected) return;
-        sendAlertToEstudio('📸 Reportero: Material VISUAL destacado enviado', 'info');
+        sendToEstudio('alert', '📸 Reportero: Material VISUAL destacado enviado');
         lastCommandDisplay.innerHTML = '📸 Visual enviado al estudio.';
         setTimeout(() => {
             if(lastCommandDisplay.innerHTML.includes('Visual enviado')) {
@@ -453,11 +416,11 @@
     document.getElementById('reporterTransmitirBtn').onclick = () => {
         if(!estudioConnected) return;
         if(currentState === 'onair') {
-            lastCommandDisplay.innerHTML = '🔴 Ya estás al aire. Espera instrucciones del estudio.';
+            lastCommandDisplay.innerHTML = '🔴 Ya estás al aire. Espera instrucciones.';
         } else if(currentState === 'cortado') {
             lastCommandDisplay.innerHTML = '⛔ Señal cortada. No puedes transmitir.';
         } else {
-            sendAlertToEstudio('📢 Reportero solicita autorización para transmitir', 'info');
+            sendToEstudio('alert', '📢 Reportero solicita autorización para transmitir');
             lastCommandDisplay.innerHTML = '📨 Solicitud de transmisión enviada al estudio.';
         }
         setTimeout(() => {
@@ -467,65 +430,33 @@
         }, 3000);
     };
     
-    // Limpiar comandos antiguos periódicamente
-    function cleanOldCommands() {
-        if(!estudioId) return;
-        const commandKey = `oasis_${estudioId}_command`;
-        const command = localStorage.getItem(commandKey);
-        if(command) {
-            try {
-                const data = JSON.parse(command);
-                if(Date.now() - data.timestamp > 8000) {
-                    localStorage.removeItem(commandKey);
-                }
-            } catch(e) {}
-        }
-    }
-    
     // Sincronización periódica
     setInterval(() => {
         if(estudioId && estudioConnected) {
-            readCommandsFromEstudio();
-            readEstudioState();
-            cleanOldCommands();
-            
-            // Verificar si el estudio sigue activo
-            const estudioState = localStorage.getItem(`oasis_${reporterId}_estudio`);
-            if(!estudioState) {
-                // El estudio sigue activo pero no hay datos, mantenemos conexión
-            }
-        }
-    }, 800);
-    
-    // Verificar conexión periódica con el estudio
-    setInterval(() => {
-        if(estudioId && estudioConnected) {
+            readCommands();
             sendReporterState();
         }
-    }, 3000);
+    }, 800);
     
     // Inicializar conexión
     if(estudioId) {
         connectToEstudio();
-        addWelcomeMessage();
     } else {
         reporterConnBadge.innerText = '⚠️ ENLACE INVÁLIDO';
         reporterDisplayMsg.innerHTML = '❌ Error: No se especificó ID del estudio.<br>Usa el enlace proporcionado por Radio Oasis FM.';
     }
     
-    function addWelcomeMessage() {
-        console.log('Reportero conectado al estudio:', estudioId);
-    }
-    
     // Limpiar al cerrar
     window.addEventListener('beforeunload', () => {
         if(estudioId) {
-            const reporterData = {
+            const reporterDataKey = `oasis_reporter_${estudioId}`;
+            const data = {
                 connected: false,
+                reporterId: reporterId,
                 estudioId: estudioId,
                 timestamp: Date.now()
             };
-            localStorage.setItem(`oasis_${estudioId}_reportero`, JSON.stringify(reporterData));
+            localStorage.setItem(reporterDataKey, JSON.stringify(data));
         }
         if(vumeterInterval) clearInterval(vumeterInterval);
     });
